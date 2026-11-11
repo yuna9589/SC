@@ -1,11 +1,18 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react"; //1. Fragment 추가
 import { api } from "../api";
 import { formatDate } from "../format";
 import type { Post } from "../types";
 import type { Go } from "../App";
 
-function highlight(text: string, keyword: string): string {
-  return text.split(keyword).join(`<mark>${keyword}</mark>`);
+// 2. JSX 방식을 반환하는 highlight 함수로 수정 (반환 타입 : string 제거)
+function highlight(text: string, keyword: string) {
+  if (!keyword) return text;
+  return text.split(keyword).map((part, i) => (
+    <Fragment key={i}>
+      {i > 0 && <mark>{keyword}</mark>}
+      {part}
+    </Fragment>
+  ));
 }
 
 export default function PostList({go}: {go: Go}) {
@@ -52,9 +59,8 @@ export default function PostList({go}: {go: Go}) {
               <td className="num">{p.id}</td>
               <td>
                 <button className="title-link" onClick={() => go({name: "detail", id: p.id})}>
-                  {searched
-                    ? <span dangerouslySetInnerHTML={{__html: highlight(p.title, searched)}} />
-                    : p.title}
+                  {/*수정- dangerouslySetInnerHTML 제거*/}
+                  {searched ? highlight(p.title, searched) : p.title}
                 </button>
               </td>
               <td>{p.authorName}</td>

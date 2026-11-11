@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import DOMPurify from "dompurify"; // 1. DOMPurify 모듈 추가(교안 w10-47)
 import { api, downloadUrl } from "../api";
 import { formatDate, formatSize } from "../format";
 import type { Comment, PostDetail, User } from "../types";
@@ -45,13 +46,21 @@ export default function PostView({id, me, go}: {id: number; me: User | null; go:
 
   const canEdit = me !== null && (me.id === post.user_id || me.role === "ADMIN");
 
+  // DOMPurify 정화 처리 (교안 w10-47)
+  const cleanContent = DOMPurify.sanitize(post.content, {
+    ALLOWED_TAGS: ["b", "i", "u", "br"],
+    ALLOWED_ATTR: []
+  });
+
   return (
     <article className="card">
       <button className="back" onClick={() => go({name: "list"})}>← 목록으로</button>
       <h1>{post.title}</h1>
       <p className="meta">{post.authorName} · {formatDate(post.created_at)}</p>
 
-      <div className="content" dangerouslySetInnerHTML={{__html: post.content}} />
+      {/*수정: 정화된 HTML 렌더링*/}
+      <div className="content" dangerouslySetInnerHTML={{ __html: cleanContent }} />
+      {/*<div className="content" dangerouslySetInnerHTML={{__html: post.content}} />*/}
 
       {post.attachments.length > 0 && (
         <div className="files">
